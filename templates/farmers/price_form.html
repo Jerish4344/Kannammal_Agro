@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load lang %}
+
+{% block title %}{% trans "Submit Prices" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .voice-transcript {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        font-style: italic;
+        color: #6b7280;
+    }
+    
+    .mic-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .mic-status.listening {
+        color: #22c55e;
+    }
+    
+    .mic-status.error {
+        color: #ef4444;
+    }
+    
+    .offline-warning {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        color: #92400e;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="farmer-ui max-w-2xl mx-auto">
+    <!-- Offline Warning -->
+    <div id="offlineWarning" class="offline-warning">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            {% trans "No internet connection. Your prices will be saved when connection is restored." %}
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-6 text-center">{% trans "Submit Today's Prices" %}</h1>
+        
+        <form method="post" id="priceForm" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- SKU Selection -->
+            <div>
+                <label for="id_sku" class="block text-lg font-medium mb-3">
+                    {% trans "Product" %} <span class="text-red-500">*</span>
+                </label>
+                <select id="id_sku" name="sku" required 
+                        class="w-full p-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">{% trans "Select a product..." %}</option>
+                    {% for sku in available_skus %}
+                        <option value="{{ sku.id }}">
+                            {{ sku.get_localized_name:LANGUAGE_CODE }} ({{ sku.get_unit_display }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Price Input with Voice -->
+            <div>
+                <label for="id_price" class="block text-lg font-medium mb-3">
+                    {% trans "Price per Unit" %} (₹) <span class="text-red-500">*</span>
+                </label>
+                
+                <div class="flex items-center space-x-3">
+                    <input type="number" 
+                           id="id_price" 
+                           name="price" 
+                           step="0.01" 
+                           min="0.01" 
+                           required
+                           placeholder="{% trans 'Enter price...' %}"
+                           class="flex-1 p-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 numeric-input">
+                    
+                    {% if FEATURE_VOICE_INPUT %}
+                    <button type="button" 
+                            id="micButton" 
+                            class="mic-button"
+                            title="{% trans 'Click to speak price' %}">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                    {% endif %}
+                </div>
+                
+                {% if FEATURE_VOICE_INPUT %}
+                <!-- Voice Status -->
+                <div id="micStatus" class="mic-status" style="display: none;">
+                    <span id="statusText"></span>
+                </div>
+                
+                <!-- Voice Transcript -->
+                <div id="voiceTranscript" class="voice-transcript" style="display: none;">
+                    <strong>{% trans "Heard:" %}</strong> <span id="transcriptText"></span>
+                </div>
+                
+                <!-- Fallback File Upload -->
+                <div id="fileUploadSection" style="display: none;" class="mt-4">
+                    <label class="block text-sm font-medium mb-2">
+                        {% trans "Or upload voice note (WAV/MP3):" %}
+                    </label>
+                    <input type="file" 
+                           id="audioFile" 
+                           name="audio_file" 
+                           accept="audio/wav,audio/mp3,audio/mpeg"
+                           class="w-full p-2 text-sm border border-gray-300 rounded">
+                </div>
+                
+                <!-- Privacy Notice -->
+                <div class="mt-2 text-xs text-gray-500">
+                    {% trans "Voice data is processed locally and not stored permanently." %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Quantity Available (Optional) -->
+            <div>
+                <label for="id_quantity" class="block text-lg font-medium mb-3">
+                    {% trans "Quantity Available" %} ({% trans "Optional" %})
+                </label>
+                <input type="number" 
+                       id="id_quantity" 
+                       name="quantity_available" 
+                       step="0.01" 
+                       min="0"
+                       placeholder="{% trans 'Enter quantity...' %}"
+                       class="w-full p-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 numeric-input">
+            </div>
+            
+            <!-- Notes (Optional) -->
+            <div>
+                <label for="id_notes" class="block text-lg font-medium mb-3">
+                    {% trans "Additional Notes" %} ({% trans "Optional" %})
+                </label>
+                <textarea id="id_notes" 
+                          name="notes" 
+                          rows="3"
+                          placeholder="{% trans 'Any additional information...' %}"
+                          class="w-full p-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"></textarea>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white text-xl font-bold py-4 px-8 rounded-lg transition-colors disabled:opacity-50"
+                        id="submitButton">
+                    {% trans "Submit Price" %}
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Success Message Template -->
+    <div id="successMessage" class="hidden mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+        {% trans "Price submitted successfully!" %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if FEATURE_VOICE_INPUT %}
+<script src="{% url 'static' 'js/voice_price.js' %}"></script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check online/offline status
+    function updateOnlineStatus() {
+        const offlineWarning = document.getElementById('offlineWarning');
+        if (!navigator.onLine) {
+            offlineWarning.style.display = 'block';
+        } else {
+            offlineWarning.style.display = 'none';
+        }
+    }
+    
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+    
+    // Form submission handling
+    const form = document.getElementById('priceForm');
+    const submitButton = document.getElementById('submitButton');
+    
+    form.addEventListener('submit', function(e) {
+        submitButton.disabled = true;
+        submitButton.textContent = '{% trans "Submitting..." %}';
+        
+        // Re-enable after 3 seconds to prevent permanent disable
+        setTimeout(() => {
+            submitButton.disabled = false;
+            submitButton.textContent = '{% trans "Submit Price" %}';
+        }, 3000);
+    });
+    
+    // Auto-focus on first empty field
+    const skuSelect = document.getElementById('id_sku');
+    const priceInput = document.getElementById('id_price');
+    
+    if (!skuSelect.value) {
+        skuSelect.focus();
+    } else if (!priceInput.value) {
+        priceInput.focus();
+    }
+});
+</script>
+{% endblock %}

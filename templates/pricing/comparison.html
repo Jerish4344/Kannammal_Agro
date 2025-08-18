@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load lang %}
+
+{% block title %}{% trans "Price Comparison" %} - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .comparison-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .comparison-table table {
+        min-width: 800px;
+    }
+    
+    .sticky-header th {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .price-cell {
+        font-weight: bold;
+        text-align: right;
+        padding: 1rem;
+    }
+    
+    .farmer-cell {
+        font-weight: medium;
+    }
+    
+    .export-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    @media (max-width: 640px) {
+        .export-buttons {
+            flex-direction: column;
+        }
+        
+        .export-buttons button,
+        .export-buttons a {
+            width: 100%;
+        }
+    }
+    
+    .ranking-badge {
+        font-size: 0.75rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 9999px;
+        display: inline-block;
+        margin-left: 0.25rem;
+    }
+    
+    .rank-1 { background: #22c55e; color: white; }
+    .rank-2 { background: #eab308; color: white; }
+    .rank-3 { background: #f97316; color: white; }
+    
+    .filter-form {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {% trans "Price Comparison" %}
+        </h1>
+        
+        <!-- Export Buttons -->
+        <div class="export-buttons">
+            <a href="{% url 'pricing:export_csv' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
+               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                📊 {% trans "Export CSV" %}
+            </a>
+            <a href="{% url 'pricing:export_excel' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
+               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                📈 {% trans "Export Excel" %}
+            </a>
+            <a href="{% url 'pricing:export_pdf' %}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}"
+               class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                📄 {% trans "Export PDF" %}
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filter-form">
+        <form method="get" id="filterForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Date Filter -->
+            <div>
+                <label for="date" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Date" %}
+                </label>
+                <input type="date" 
+                       id="date" 
+                       name="date" 
+                       value="{{ request.GET.date|default:today }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            </div>
+            
+            <!-- Region Filter -->
+            <div>
+                <label for="region" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Region" %}
+                </label>
+                <select id="region" 
+                        name="region"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">{% trans "All Regions" %}</option>
+                    {% for region in available_regions %}
+                        <option value="{{ region.id }}" 
+                                {% if request.GET.region == region.id|stringformat:'s' %}selected{% endif %}>
+                            {{ region.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- SKU Filter -->
+            <div>
+                <label for="sku" class="block text-sm font-medium text-gray-700 mb-1">
+                    {% trans "Product" %}
+                </label>
+                <select id="sku" 
+                        name="sku"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <option value="">{% trans "All Products" %}</option>
+                    {% for sku in available_skus %}
+                        <option value="{{ sku.id }}" 
+                                {% if request.GET.sku == sku.id|stringformat:'s' %}selected{% endif %}>
+                            {{ sku.get_localized_name:LANGUAGE_CODE }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="flex items-end">
+                <button type="submit" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                    {% trans "Filter" %}
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Comparison Table -->
+    {% if price_data %}
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    {% trans "Price Comparison Results" %}
+                    {% if selected_date %}
+                        - {{ selected_date|date:"M d, Y" }}
+                    {% endif %}
+                </h2>
+                {% if selected_region %}
+                    <p class="text-sm text-gray-600">{% trans "Region" %}: {{ selected_region.name }}</p>
+                {% endif %}
+                {% if selected_sku %}
+                    <p class="text-sm text-gray-600">{% trans "Product" %}: {{ selected_sku.get_localized_name:LANGUAGE_CODE }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="comparison-table">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 sticky-header">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Farmer" %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Product" %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Region" %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Price" %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Quantity" %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Submitted" %}
+                            </th>
+                            {% if FEATURE_RANKING %}
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% trans "Farmer Score" %}
+                            </th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="priceTableBody">
+                        {% for price in price_data %}
+                            <tr class="hover:bg-gray-50 
+                                     {% if price.is_lowest %}price-highlight-lowest
+                                     {% elif price.is_second_lowest %}price-highlight-second
+                                     {% elif price.is_highest %}price-highlight-highest{% endif %}">
+                                
+                                <!-- Farmer -->
+                                <td class="px-6 py-4 whitespace-nowrap farmer-cell">
+                                    <div class="flex items-center">
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ price.farmer.user.get_full_name|default:price.farmer.farmer_id }}
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                {{ price.farmer.farmer_id }}
+                                            </div>
+                                        </div>
+                                        {% if price.ranking_position %}
+                                            <span class="ranking-badge rank-{{ price.ranking_position }}">
+                                                #{{ price.ranking_position }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                
+                                <!-- Product -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ price.sku.get_localized_name:LANGUAGE_CODE }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ price.sku.code }}
+                                    </div>
+                                </td>
+                                
+                                <!-- Region -->
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ price.region.name }}
+                                </td>
+                                
+                                <!-- Price -->
+                                <td class="px-6 py-4 whitespace-nowrap price-cell">
+                                    <div class="text-lg font-bold text-gray-900">
+                                        {{ price.price|currency_format }}
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        {% trans "per" %} {{ price.sku.get_unit_display }}
+                                    </div>
+                                </td>
+                                
+                                <!-- Quantity -->
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                                    {% if price.quantity_available %}
+                                        {{ price.quantity_available }} {{ price.sku.get_unit_display }}
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </td>
+                                
+                                <!-- Submitted Time -->
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <div class="text-sm text-gray-900">
+                                        {{ price.submitted_at|time:"H:i" }}
+                                    </div>
+                                    {% if price.submitted_via == 'voice' %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            🎤 {% trans "Voice" %}
+                                        </span>
+                                    {% endif %}
+                                    {% if price.is_on_time %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            ⏰ {% trans "On Time" %}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                
+                                {% if FEATURE_RANKING %}
+                                <!-- Farmer Score -->
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if price.farmer.current_score %}
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ price.farmer.current_score.total_score|floatformat:1 }}
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            {% trans "Rank" %} #{{ price.farmer.current_score.rank_in_region }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Summary Statistics -->
+            {% if price_stats %}
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <div class="text-lg font-bold text-green-600">{{ price_stats.min_price|currency_format }}</div>
+                        <div class="text-sm text-gray-600">{% trans "Lowest Price" %}</div>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-blue-600">{{ price_stats.avg_price|currency_format }}</div>
+                        <div class="text-sm text-gray-600">{% trans "Average Price" %}</div>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-red-600">{{ price_stats.max_price|currency_format }}</div>
+                        <div class="text-sm text-gray-600">{% trans "Highest Price" %}</div>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-purple-600">{{ price_stats.total_submissions }}</div>
+                        <div class="text-sm text-gray-600">{% trans "Total Submissions" %}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Order Placement Actions (for Buyer Heads) -->
+        {% if user.is_buyer_head and price_data %}
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">{% trans "Place Order" %}</h3>
+            <p class="text-gray-600 mb-4">
+                {% trans "Select the best price and place an order with the farmer." %}
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for price in price_data|slice:":3" %}
+                    <div class="border rounded-lg p-4 {% if price.is_lowest %}border-green-500 bg-green-50{% endif %}">
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ price.farmer.user.get_full_name|default:price.farmer.farmer_id }}
+                        </div>
+                        <div class="text-lg font-bold text-green-600">
+                            {{ price.price|currency_format }}
+                        </div>
+                        <a href="{% url 'orders:order_create' %}?farmer={{ price.farmer.id }}&sku={{ price.sku.id }}&price={{ price.price }}"
+                           class="mt-2 block w-full bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-md text-sm font-medium transition-colors">
+                            {% trans "Place Order" %}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+    {% else %}
+        <!-- No Data Message -->
+        <div class="bg-white rounded-lg shadow p-12 text-center">
+            <div class="text-6xl mb-4">📊</div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+                {% trans "No price data found" %}
+            </h3>
+            <p class="text-gray-600 mb-6">
+                {% trans "Try adjusting your filters or check back later for new price submissions." %}
+            </p>
+            <a href="{% url 'pricing:comparison' %}" 
+               class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+                {% trans "Reset Filters" %}
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form when filters change
+    const filterForm = document.getElementById('filterForm');
+    const filterInputs = filterForm.querySelectorAll('select, input[type="date"]');
+    
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Small delay to allow for rapid changes
+            setTimeout(() => {
+                filterForm.submit();
+            }, 100);
+        });
+    });
+    
+    // Add loading states to export buttons
+    document.querySelectorAll('.export-buttons a').forEach(button => {
+        button.addEventListener('click', function() {
+            const originalText = this.textContent;
+            this.textContent = '⏳ ' + originalText.slice(2);
+            
+            setTimeout(() => {
+                this.textContent = originalText;
+            }, 3000);
+        });
+    });
+    
+    // Highlight clicked rows
+    document.querySelectorAll('#priceTableBody tr').forEach(row => {
+        row.addEventListener('click', function() {
+            // Remove previous highlights
+            document.querySelectorAll('#priceTableBody tr').forEach(r => {
+                r.classList.remove('ring-2', 'ring-blue-500');
+            });
+            
+            // Highlight current row
+            this.classList.add('ring-2', 'ring-blue-500');
+        });
+    });
+});
+</script>
+{% endblock %}

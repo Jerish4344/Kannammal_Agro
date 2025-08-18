@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kannammal Agro Industries{% endblock %}</title>
+    
+    <!-- Tailwind CSS from CDN for now -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js for interactive components -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
+        }
+        
+        .navbar-scroll {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .feature-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .feature-icon:hover {
+            transform: rotate(5deg) scale(1.1);
+        }
+        
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-outline {
+            border: 2px solid #22c55e;
+            color: #22c55e;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline:hover {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .stats-bg {
+            background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+        }
+        
+        .dropdown-menu {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .mobile-menu {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .footer-bg {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        }
+        
+        .price-card {
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .price-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab-content {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-input:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50" x-data="{ open: false, mobileOpen: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <svg class="h-8 w-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
+                        </svg>
+                        <span class="text-xl font-bold text-gray-900">
+                            Kannammal Agro
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    {% if user.is_authenticated %}
+                        <!-- Role-based navigation items -->
+                        {% if user.is_admin %}
+                            <a href="/admin/" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Admin Panel</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Reports</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Settings</a>
+                        {% elif user.is_region_head %}
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">My Region</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Farmers</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Reports</a>
+                        {% elif user.is_buyer_head %}
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Procurement</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Buyers</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Analytics</a>
+                        {% elif user.is_buyer %}
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Browse</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">My Orders</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Prices</a>
+                        {% elif user.is_farmer %}
+                            <a href="{% url 'pricing:submit_price' %}" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Add Prices</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">My Orders</a>
+                            <a href="#" class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium">Profile</a>
+                        {% endif %}
+                        
+                        <!-- User info and logout -->
+                        <div class="flex items-center space-x-4">
+                            <div class="text-sm">
+                                <span class="text-gray-500">{{ user.get_role_display }}</span><br>
+                                <span class="font-medium text-gray-700">{{ user.get_full_name|default:user.username }}</span>
+                            </div>
+                            <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors duration-200">
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button @click="mobileOpen = !mobileOpen" class="text-gray-700 hover:text-green-600">
+                        Menu
+                    </button>
+                </div>
+                <!-- Mobile menu -->
+                <div x-show="mobileOpen" x-transition class="md:hidden absolute top-16 left-0 w-full bg-white shadow-lg">
+                    <div class="px-4 py-2 space-y-1">
+                        {% if user.is_authenticated %}
+                            <!-- User info -->
+                            <div class="px-3 py-2 border-b">
+                                <div class="text-sm text-gray-500">{{ user.get_role_display }}</div>
+                                <div class="font-medium text-gray-700">{{ user.get_full_name|default:user.username }}</div>
+                            </div>
+                            
+                            <!-- Role-based mobile menu items -->
+                            {% if user.is_admin %}
+                                <a href="/admin/" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Admin Panel</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Reports</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Settings</a>
+                            {% elif user.is_region_head %}
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">My Region</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Farmers</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Reports</a>
+                            {% elif user.is_buyer_head %}
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Procurement</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Buyers</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Analytics</a>
+                            {% elif user.is_buyer %}
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Browse</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">My Orders</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Prices</a>
+                            {% elif user.is_farmer %}
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Add Prices</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">My Orders</a>
+                                <a href="#" class="block text-gray-700 hover:text-green-600 px-3 py-2 text-sm">Profile</a>
+                            {% endif %}
+                            
+                            <!-- Logout -->
+                            <form method="post" action="{% url 'accounts:logout' %}" class="block border-t pt-2">
+                                {% csrf_token %}
+                                <button type="submit" class="block text-red-600 hover:text-red-700 px-3 py-2 text-sm text-left w-full">
+                                    Logout
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}" class="block bg-green-600 text-white px-3 py-2 rounded-md text-base font-medium hover:bg-green-700">
+                                Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-bg text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Kannammal Agro Industries</h3>
+                    <p class="text-gray-300">Connecting farmers with markets</p>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Contact</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Support</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">Services</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white">Price Comparison</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Order Management</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Farmer Rankings</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-semibold mb-4">Contact Info</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li>Phone: +91 98765 43210</li>
+                        <li>Email: info@kannammalagro.com</li>
+                        <li>Address: Chennai, Tamil Nadu</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
+                <p>&copy; 2024 Kannammal Agro Industries. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" 
+            class="fixed bottom-6 right-6 bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-700 transition-all duration-300 opacity-0 pointer-events-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+    <script>
+        // Back to top button visibility
+        window.addEventListener('scroll', function() {
+            const button = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                button.style.opacity = '1';
+                button.style.pointerEvents = 'auto';
+            } else {
+                button.style.opacity = '0';
+                button.style.pointerEvents = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

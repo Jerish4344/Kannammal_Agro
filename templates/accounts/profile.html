@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Profile" %}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">{% trans "User Profile" %}</h1>
+            <p class="mt-2 text-gray-600">{% trans "Manage your account information and preferences." %}</p>
+        </div>
+
+        <!-- Profile Information -->
+        <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">{% trans "Profile Information" %}</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Full Name" %}</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ user.get_full_name|default:user.username }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Email" %}</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ user.email }}</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Role" %}</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ user.get_role_display }}</p>
+                </div>
+                
+                {% if user.region %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Region" %}</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ user.region.name }}</p>
+                </div>
+                {% endif %}
+                
+                {% if user.phone %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Phone" %}</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ user.phone }}</p>
+                </div>
+                {% endif %}
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">{% trans "Preferred Language" %}</label>
+                    <p class="mt-1 text-sm text-gray-900">{{ user.get_preferred_language_display }}</p>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <a href="{% url 'accounts:profile_edit' %}" 
+                   class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition duration-200">
+                    {% trans "Edit Profile" %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Additional Actions -->
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">{% trans "Account Actions" %}</h2>
+            
+            <div class="space-y-4">
+                <a href="{% url 'accounts:password_change' %}" 
+                   class="block text-green-600 hover:text-green-800">
+                    {% trans "Change Password" %}
+                </a>
+                
+                {% if user.role == 'farmer' and user.farmer_profile %}
+                <a href="{% url 'farmers:profile' %}" 
+                   class="block text-green-600 hover:text-green-800">
+                    {% trans "Farmer Profile" %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
