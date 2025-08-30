@@ -297,19 +297,19 @@ JAZZMIN_SETTINGS = {
     "site_brand": "Kannammal Agro",
     
     # Logo to use for your site, must be present in static files
-    "site_logo": None,
+    "site_logo": "images/kannammal_agro.png",
     
     # Logo to use for your site, must be present in static files, used for login form logo
-    "login_logo": None,
+    "login_logo": "images/kannammal_agro.png",
     
     # Logo to use for login form in dark themes
-    "login_logo_dark": None,
+    "login_logo_dark": "images/kannammal_agro.png",
     
     # CSS classes that are applied to the logo above
-    "site_logo_classes": "img-circle",
+    "site_logo_classes": "img-fluid",
     
     # Relative path to a favicon for your site, will default to site_logo if absent
-    "site_icon": None,
+    "site_icon": "images/kannammal_agro.png",
     
     # Welcome text on the login screen
     "welcome_sign": "Welcome to Kannammal Agro Industries Admin",
@@ -414,7 +414,7 @@ JAZZMIN_SETTINGS = {
     # UI Tweaks #
     #############
     # Relative paths to custom CSS/JS scripts (must be present in static files)
-    "custom_css": None,
+    "custom_css": "css/admin_custom.css",
     "custom_js": None,
     # Whether to link font from fonts.googleapis.com (use custom_css to supply font otherwise)
     "use_google_fonts_cdn": True,

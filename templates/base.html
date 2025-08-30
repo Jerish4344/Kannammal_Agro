@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Kannammal Agro Industries{% endblock %}</title>
+    <title>{% block title %}Kannammal Agro - Farm Management System{% endblock %}</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,7 @@
     <script defer src="https://unpkg.com/alpinejs@3.13.1/dist/cdn.min.js"></script>
     
     <!-- Custom CSS -->
-    {% load compress %}
+    {% load compress static %}
     {% compress css %}
     <style>
         .mobile-friendly {
@@ -102,13 +102,16 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen flex flex-col">
     <!-- Navigation -->
     <nav class="bg-green-600 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex items-center">
+                    <img src="{% static 'images/kannammal_agro.png' %}" 
+                         alt="Kannammal Agro Logo" 
+                         class="h-12 w-12 object-contain mr-3">
                     <h1 class="text-xl font-bold">
                         <a href="/dashboard/" class="text-white hover:text-green-100">
                             Kannammal Agro
@@ -206,21 +209,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Mobile Navigation -->
-        {% if user.is_authenticated %}
-        <div class="md:hidden">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3" x-data="{ mobileOpen: false }">
-                <button @click="mobileOpen = !mobileOpen" class="w-full text-left px-3 py-2 text-base font-medium hover:text-green-100">
-                    Menu
-                </button>
-                
-                <div x-show="mobileOpen" x-transition class="pl-4 space-y-1">
-                    <!-- Simplified mobile menu -->
-                </div>
-            </div>
-        </div>
-        {% endif %}
     </nav>
     
     <!-- Messages -->
@@ -235,39 +223,10 @@
     {% endif %}
     
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <main class="flex-1 max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {% block content %}{% endblock %}
     </main>
-    
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white mt-12">
-        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Kannammal Agro Industries</h3>
-                    <p class="text-gray-300">Connecting farmers with markets</p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2 text-gray-300">
-                        <li><a href="/dashboard/" class="hover:text-white">Dashboard</a></li>
-                        {% if user.is_authenticated %}
-                            <li><a href="{% url 'accounts:logout' %}" class="hover:text-white">Logout</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Support</h3>
-                    <p class="text-gray-300">Contact: +91 9876543210</p>
-                    <p class="text-gray-300">Email: support@kannammalagroind.com</p>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-                <p>&copy; {% now "Y" %} Kannammal Agro Industries Pvt Ltd. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-    
+
     <!-- JavaScript -->
     <script>
         // Data fetching functions - available globally

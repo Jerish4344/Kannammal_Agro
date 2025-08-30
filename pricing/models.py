@@ -80,13 +80,25 @@ class FarmerPrice(BaseModel):
         unique_together = ['farmer', 'sku', 'date']
         ordering = ['-date', 'sku__name', 'price']
         indexes = [
-            models.Index(fields=['date', 'sku', 'region']),
-            models.Index(fields=['farmer', 'date']),
             models.Index(fields=['sku', 'region', 'date']),
         ]
         
     def __str__(self):
-        return f"{self.farmer.farmer_id} - {self.sku.name} - ₹{self.price} ({self.date})"
+        return f"{self.farmer} - {self.sku.name} - ₹{self.price} ({self.date})"
+    
+    def save(self, *args, **kwargs):
+        """Auto-set region based on farmer's region if not provided and handle date."""
+        from django.utils import timezone
+        
+        # Auto-set region based on farmer's region if not provided
+        if not self.region_id and self.farmer_id:
+            self.region = self.farmer.region
+        
+        # Set default date to today if not provided
+        if not self.date:
+            self.date = timezone.now().date()
+            
+        super().save(*args, **kwargs)
     
     @property
     def is_on_time(self):

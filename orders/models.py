@@ -128,7 +128,7 @@ class Order(BaseModel):
         ]
         
     def __str__(self):
-        return f"{self.order_number} - {self.farmer.farmer_id} - {self.sku.name}"
+        return f"{self.order_number} - {self.farmer} - {self.sku.name}"
     
     def save(self, *args, **kwargs):
         """Auto-calculate total amount and generate order number."""

@@ -1,0 +1,183 @@
+{% extends 'base_simple.html' %}
+
+{% block title %}Admin Settings - Kannammal Agro{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Admin Settings</h1>
+        <p class="text-gray-600 mt-2">Manage system configurations and preferences</p>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- System Configuration -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                System Configuration
+            </h2>
+            <div class="space-y-4">
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showPriceSettings()">
+                    <h3 class="font-medium text-gray-900">Price Submission Settings</h3>
+                    <p class="text-sm text-gray-600 mt-1">Configure price submission cutoff times and validation rules</p>
+                </div>
+                
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showNotificationSettings()">
+                    <h3 class="font-medium text-gray-900">Notification Settings</h3>
+                    <p class="text-sm text-gray-600 mt-1">Manage email and SMS notification preferences</p>
+                </div>
+                
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showBackupSettings()">
+                    <h3 class="font-medium text-gray-900">Backup & Security</h3>
+                    <p class="text-sm text-gray-600 mt-1">Configure automated backups and security settings</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                User Management
+            </h2>
+            <div class="space-y-4">
+                <a href="/admin/accounts/user/" class="block border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <h3 class="font-medium text-gray-900">Manage Users</h3>
+                    <p class="text-sm text-gray-600 mt-1">Add, edit, and manage user accounts and roles</p>
+                </a>
+                
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showRoleSettings()">
+                    <h3 class="font-medium text-gray-900">Role Permissions</h3>
+                    <p class="text-sm text-gray-600 mt-1">Configure role-based access control and permissions</p>
+                </div>
+                
+                <a href="/admin/farmers/farmer/" class="block border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <h3 class="font-medium text-gray-900">Farmer Verification</h3>
+                    <p class="text-sm text-gray-600 mt-1">Review and verify farmer registrations and documents</p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                </svg>
+                Data Management
+            </h2>
+            <div class="space-y-4">
+                <a href="/admin/catalog/sku/" class="block border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <h3 class="font-medium text-gray-900">SKU Management</h3>
+                    <p class="text-sm text-gray-600 mt-1">Manage product catalog and SKU configurations</p>
+                </a>
+                
+                <a href="{% url 'core:bulk_upload_sku' %}" class="block border rounded-lg p-4 hover:bg-gray-50 transition-colors border-green-200 bg-green-50">
+                    <h3 class="font-medium text-green-900">Bulk Upload SKUs</h3>
+                    <p class="text-sm text-green-700 mt-1">Upload multiple SKUs at once using text, CSV, or predefined list</p>
+                </a>
+                
+                <a href="/admin/regions/region/" class="block border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <h3 class="font-medium text-gray-900">Region Management</h3>
+                    <p class="text-sm text-gray-600 mt-1">Configure regions and operational areas</p>
+                </a>
+                
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showDataExport()">
+                    <h3 class="font-medium text-gray-900">Data Export/Import</h3>
+                    <p class="text-sm text-gray-600 mt-1">Export data for analysis or import bulk data</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Monitoring -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                System Monitoring
+            </h2>
+            <div class="space-y-4">
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showSystemHealth()">
+                    <h3 class="font-medium text-gray-900">System Health</h3>
+                    <p class="text-sm text-gray-600 mt-1">Monitor system performance and health metrics</p>
+                </div>
+                
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showActivityLogs()">
+                    <h3 class="font-medium text-gray-900">Activity Logs</h3>
+                    <p class="text-sm text-gray-600 mt-1">View system activity and audit logs</p>
+                </div>
+                
+                <div class="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer" onclick="showSystemInfo()">
+                    <h3 class="font-medium text-gray-900">System Information</h3>
+                    <p class="text-sm text-gray-600 mt-1">View version information and system details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">System Overview</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">Django 5.2.5</div>
+                <div class="text-sm text-gray-600">Framework Version</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">Active</div>
+                <div class="text-sm text-gray-600">System Status</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-purple-600">Production</div>
+                <div class="text-sm text-gray-600">Environment</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-orange-600">v1.0.0</div>
+                <div class="text-sm text-gray-600">Application Version</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showPriceSettings() {
+    alert('Price submission settings will be implemented soon!');
+}
+
+function showNotificationSettings() {
+    alert('Notification settings will be implemented soon!');
+}
+
+function showBackupSettings() {
+    alert('Backup & security settings will be implemented soon!');
+}
+
+function showRoleSettings() {
+    alert('Role permission settings will be implemented soon!');
+}
+
+function showDataExport() {
+    alert('Data export/import functionality will be implemented soon!');
+}
+
+function showSystemHealth() {
+    alert('System health monitoring will be implemented soon!');
+}
+
+function showActivityLogs() {
+    alert('Activity logs viewer will be implemented soon!');
+}
+
+function showSystemInfo() {
+    alert('Detailed system information will be implemented soon!');
+}
+</script>
+{% endblock %}

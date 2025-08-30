@@ -1,0 +1,61 @@
+/* Custom CSS for Jazzmin Admin Panel */
+
+/* Logo sizing for admin panel */
+.admin-logo {
+    max-height: 50px !important;
+    max-width: 200px !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+/* Sidebar logo sizing */
+.sidebar .brand-link .brand-image {
+    max-height: 40px !important;
+    max-width: 150px !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+/* Login page logo sizing */
+.login-logo img {
+    max-height: 80px !important;
+    max-width: 250px !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+/* Navbar brand logo sizing */
+.navbar-brand img {
+    max-height: 40px !important;
+    max-width: 150px !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+/* Admin header logo */
+.main-header .navbar-brand img {
+    max-height: 35px !important;
+    max-width: 140px !important;
+    height: auto !important;
+    width: auto !important;
+}
+
+/* Ensure logo is properly contained */
+.brand-link {
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.5rem !important;
+}
+
+/* Fix for login page logo container */
+.login-box .card-header {
+    text-align: center;
+    padding: 1rem;
+}
+
+.login-box .card-header img {
+    max-height: 60px !important;
+    max-width: 200px !important;
+    height: auto !important;
+    width: auto !important;
+}

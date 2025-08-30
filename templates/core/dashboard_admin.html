@@ -155,10 +155,10 @@
                         <div>
                             <div class="font-medium text-gray-900">{{ order.sku.name }}</div>
                             <div class="text-sm text-gray-600">
-                                Buyer: {{ order.assigned_buyer.get_full_name|default:order.assigned_buyer.username|default:"Not assigned" }}
+                                Buyer: {% if order.assigned_buyer %}{{ order.assigned_buyer.get_full_name|default:order.assigned_buyer.username }}{% else %}Not assigned{% endif %}
                             </div>
                             <div class="text-sm text-gray-600">
-                                Farmer: {{ order.farmer.user.get_full_name|default:order.farmer.user.username }}
+                                Farmer: {% if order.farmer and order.farmer.user %}{{ order.farmer.user.get_full_name|default:order.farmer.user.username }}{% else %}Unknown{% endif %}
                             </div>
                         </div>
                         <div class="text-right">

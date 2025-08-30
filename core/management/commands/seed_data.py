@@ -231,7 +231,6 @@ class Command(BaseCommand):
                 farmer, created = Farmer.objects.get_or_create(
                     user=user,
                     defaults={
-                        'farmer_id': f'F{str(random.randint(1000, 9999))}',
                         'contact_number': farmer_data['phone'],
                         'region': region,
                         'farm_size': Decimal(str(random.uniform(1.0, 10.0))),

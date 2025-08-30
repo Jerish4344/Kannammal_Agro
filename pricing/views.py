@@ -39,7 +39,7 @@ def submit_price(request):
             
             messages.success(
                 request,
-                _('Price for {} has been submitted successfully.').format(farmer_price.sku.name)
+                _('🎉 You have successfully submitted your price for {}! Thank you for your submission.').format(farmer_price.sku.name)
             )
             return redirect('pricing:submit_price')
     else:

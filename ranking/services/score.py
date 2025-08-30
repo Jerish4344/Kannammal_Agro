@@ -341,7 +341,7 @@ class FarmerRankingService:
         queryset = FarmerScore.objects.filter(
             is_current=True,
             deleted_at__isnull=True
-        ).select_related('farmer', 'region').order_by('-total_score', 'farmer__farmer_id')
+        ).select_related('farmer', 'region').order_by('-total_score', 'farmer__id')
         
         if region:
             queryset = queryset.filter(region=region)

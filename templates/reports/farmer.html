@@ -1,0 +1,200 @@
+{% extends 'base_simple.html' %}
+
+{% block title %}Farmer Performance Report - Kannammal Agro{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center">
+            <div>
+                {% if is_farmer_view %}
+                    <h1 class="text-3xl font-bold text-gray-900">My Performance Report</h1>
+                    <p class="text-gray-600 mt-2">Your submission patterns and performance overview</p>
+                {% else %}
+                    <h1 class="text-3xl font-bold text-gray-900">Farmer Performance Report</h1>
+                    <p class="text-gray-600 mt-2">Analyze farmer pricing and submission patterns</p>
+                {% endif %}
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'reports:dashboard' %}" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-gray-700 transition-colors">
+                    ← Back to Dashboard
+                </a>
+                <button onclick="exportFarmerData()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    Export Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Total Farmers</h3>
+            <p class="text-3xl font-bold text-green-600">{{ farmers|length }}</p>
+            <p class="text-sm text-gray-600 mt-1">Registered farmers</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Active Farmers</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ farmers|length }}</p>
+            <p class="text-sm text-gray-600 mt-1">With price submissions</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Best Price Range</h3>
+            <p class="text-3xl font-bold text-yellow-600">₹25-45</p>
+            <p class="text-sm text-gray-600 mt-1">Most competitive range</p>
+        </div>
+    </div>
+
+    <!-- Farmer Performance Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-900">Farmer Performance Details</h2>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Farmer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Region</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Submissions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Price/Kg</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performance</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for farmer in farmers %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-10 w-10 flex-shrink-0">
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                        <span class="text-sm font-medium text-green-600">
+                                            {{ farmer.user.get_full_name|default:farmer.user.username|default:"F"|add:farmer.id|slice:":1"|upper }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ farmer.user.get_full_name|default:farmer.user.username|default:"Farmer "|add:farmer.id }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">ID: F{{ farmer.id|stringformat:"04d" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ farmer.region.name|default:"N/A" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                                {{ farmer.price_count|default:0 }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            {% if farmer.avg_price %}
+                                <span class="text-green-600">₹{{ farmer.avg_price|floatformat:0 }}</span>
+                            {% else %}
+                                <span class="text-gray-400">No data</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ farmer.contact_number|default:"N/A" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if farmer.is_active %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {% if farmer.price_count > 5 %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    Excellent
+                                </span>
+                            {% elif farmer.price_count > 2 %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Good
+                                </span>
+                            {% elif farmer.price_count > 0 %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Fair
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    New
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            No farmer data available
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Performance Insights -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Top Performing Farmers</h3>
+            <div class="space-y-3">
+                {% for farmer in farmers|slice:":5" %}
+                    {% if farmer.price_count > 0 %}
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ farmer.user.get_full_name|default:farmer.user.username|default:"Farmer "|add:farmer.id }}</p>
+                            <p class="text-sm text-gray-600">{{ farmer.price_count }} submissions</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-green-600">₹{{ farmer.avg_price|floatformat:0 }}</p>
+                            <p class="text-xs text-gray-500">avg price</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <p class="text-gray-500">No performance data available</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Regional Distribution</h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Tamil Nadu</span>
+                    <span class="font-medium">{{ farmers|length }} farmers</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Active regions</span>
+                    <span class="font-medium">Multiple</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-600">Coverage</span>
+                    <span class="font-medium text-green-600">Growing</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportFarmerData() {
+    alert('Export functionality will be implemented soon!');
+}
+</script>
+{% endblock %}

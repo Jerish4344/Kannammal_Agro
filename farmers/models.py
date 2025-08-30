@@ -21,11 +21,6 @@ class Farmer(BaseModel):
         related_name='farmers',
         verbose_name=_('Region')
     )
-    farmer_id = models.CharField(
-        max_length=20,
-        unique=True,
-        verbose_name=_('Farmer ID')
-    )
     contact_number = models.CharField(
         max_length=15,
         verbose_name=_('Contact Number')
@@ -86,10 +81,10 @@ class Farmer(BaseModel):
     class Meta:
         verbose_name = _('Farmer')
         verbose_name_plural = _('Farmers')
-        ordering = ['farmer_id']
+        ordering = ['id']
         
     def __str__(self):
-        return f"{self.farmer_id} - {self.user.get_full_name() or self.user.username}"
+        return f"F{self.id:04d} - {self.user.get_full_name() or self.user.username}"
     
     @property
     def is_verified(self):
@@ -189,4 +184,4 @@ class FarmerDocument(BaseModel):
         unique_together = ['farmer', 'document_type']
         
     def __str__(self):
-        return f"{self.farmer.farmer_id} - {self.get_document_type_display()}"
+        return f"{self.farmer} - {self.get_document_type_display()}"

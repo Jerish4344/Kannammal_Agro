@@ -3,7 +3,7 @@ from .models import Farmer
 
 @admin.register(Farmer)
 class FarmerAdmin(admin.ModelAdmin):
-    list_display = ('get_farmer_name', 'get_farmer_email', 'region', 'contact_number', 'is_active', 'created_at')
+    list_display = ('get_farmer_id', 'get_farmer_name', 'get_farmer_email', 'region', 'contact_number', 'is_active', 'created_at')
     list_filter = ('region', 'is_active', 'created_at')
     search_fields = ('user__first_name', 'user__last_name', 'user__email', 'user__username', 'contact_number')
     ordering = ('-created_at',)
@@ -30,6 +30,11 @@ class FarmerAdmin(admin.ModelAdmin):
     )
     
     readonly_fields = ('created_at', 'updated_at')
+    
+    def get_farmer_id(self, obj):
+        return f"F{obj.id:04d}"
+    get_farmer_id.short_description = 'Farmer ID'
+    get_farmer_id.admin_order_field = 'id'
     
     def get_farmer_name(self, obj):
         return f"{obj.user.first_name} {obj.user.last_name}" if obj.user.first_name else obj.user.username

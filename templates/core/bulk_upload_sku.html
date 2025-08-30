@@ -1,0 +1,229 @@
+{% extends 'base_simple.html' %}
+
+{% block title %}Bulk Upload SKUs - Kannammal Agro{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Bulk Upload SKUs</h1>
+        <p class="text-gray-600 mt-2">Upload multiple product SKUs quickly using text, CSV, or predefined list</p>
+    </div>
+
+    <!-- Upload Methods -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Choose Upload Method</h2>
+        
+        <!-- Method Selection Tabs -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8">
+                <button onclick="showTab('text')" id="text-tab" class="tab-button active py-2 px-1 border-b-2 border-green-500 font-medium text-sm text-green-600">
+                    Text Input
+                </button>
+                <button onclick="showTab('csv')" id="csv-tab" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    CSV Upload
+                </button>
+                <button onclick="showTab('predefined')" id="predefined-tab" class="tab-button py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    Predefined List
+                </button>
+            </nav>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Text Input Tab -->
+            <div id="text-content" class="tab-content">
+                <input type="hidden" name="upload_type" value="text">
+                <div class="mb-4">
+                    <label for="sku_text" class="block text-sm font-medium text-gray-700 mb-2">
+                        Enter SKU Names (one per line)
+                    </label>
+                    <textarea 
+                        name="sku_text" 
+                        id="sku_text" 
+                        rows="15" 
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="Apple Red Delicious&#10;Tomato Country&#10;Banana Nendran&#10;..."
+                    ></textarea>
+                </div>
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    Upload SKUs from Text
+                </button>
+            </div>
+
+            <!-- CSV Upload Tab -->
+            <div id="csv-content" class="tab-content hidden">
+                <input type="hidden" name="upload_type" value="csv">
+                <div class="mb-4">
+                    <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-2">
+                        Upload CSV File
+                    </label>
+                    <input 
+                        type="file" 
+                        name="csv_file" 
+                        id="csv_file" 
+                        accept=".csv"
+                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                    <p class="text-sm text-gray-500 mt-1">
+                        CSV should have columns: name, code (optional), category (optional), unit (optional), description (optional)
+                    </p>
+                </div>
+                <div class="flex space-x-4">
+                    <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors">
+                        Upload CSV File
+                    </button>
+                    <a href="{% url 'core:download_sku_template' %}" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors inline-block">
+                        Download Template
+                    </a>
+                </div>
+            </div>
+
+            <!-- Predefined List Tab -->
+            <div id="predefined-content" class="tab-content hidden">
+                <input type="hidden" name="upload_type" value="predefined">
+                <div class="mb-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Upload Your Predefined SKUs</h3>
+                    <p class="text-gray-600 mb-4">
+                        This will upload all the SKUs from your provided list including Coconut, Onion Big, Tomato Country, 
+                        Carrot, Pomegranate, and {{ predefined_count|default:"170+" }} others.
+                    </p>
+                    <div class="bg-gray-50 p-4 rounded-md">
+                        <h4 class="font-medium text-gray-800 mb-2">Sample SKUs that will be uploaded:</h4>
+                        <ul class="text-sm text-gray-600 grid grid-cols-2 md:grid-cols-3 gap-1">
+                            <li>• Coconut</li>
+                            <li>• Onion Big</li>
+                            <li>• Tomato Country</li>
+                            <li>• Carrot</li>
+                            <li>• Pomegranate</li>
+                            <li>• Potato</li>
+                            <li>• Apple Red Delicious</li>
+                            <li>• Banana Nendran</li>
+                            <li>• And many more...</li>
+                        </ul>
+                    </div>
+                </div>
+                <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition-colors">
+                    Upload Predefined SKUs
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Upload Results -->
+    {% if upload_success %}
+    <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-green-800 mb-4">Upload Results</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="bg-white p-4 rounded-lg border border-green-200">
+                <div class="text-2xl font-bold text-green-600">{{ created_count }}</div>
+                <div class="text-sm text-gray-600">SKUs Created</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-yellow-200">
+                <div class="text-2xl font-bold text-yellow-600">{{ skipped_count }}</div>
+                <div class="text-sm text-gray-600">SKUs Skipped (Already Exist)</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-red-200">
+                <div class="text-2xl font-bold text-red-600">{{ errors|length }}</div>
+                <div class="text-sm text-gray-600">Errors</div>
+            </div>
+        </div>
+
+        {% if created_skus %}
+        <div class="mb-4">
+            <h4 class="font-medium text-green-800 mb-2">Successfully Created SKUs:</h4>
+            <div class="bg-white p-4 rounded-lg border border-green-200 max-h-40 overflow-y-auto">
+                {% for sku in created_skus %}
+                <div class="flex justify-between items-center py-1 border-b border-green-100 last:border-b-0">
+                    <span class="text-sm font-medium">{{ sku.name }}</span>
+                    <span class="text-xs text-gray-500">{{ sku.code }} | {{ sku.get_category_display }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if errors %}
+        <div>
+            <h4 class="font-medium text-red-800 mb-2">Errors:</h4>
+            <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                {% for error in errors %}
+                <div class="text-sm text-red-700">• {{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% elif upload_success == False %}
+    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-red-800 mb-4">Upload Failed</h3>
+        {% if errors %}
+        <div class="bg-red-100 p-4 rounded-lg">
+            {% for error in errors %}
+            <div class="text-sm text-red-700">• {{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-blue-800 mb-4">Instructions</h3>
+        <div class="space-y-3 text-sm text-blue-700">
+            <div>
+                <strong>Text Input:</strong> Enter product names one per line. SKU codes will be auto-generated.
+            </div>
+            <div>
+                <strong>CSV Upload:</strong> Upload a CSV file with columns: name (required), code, category, unit, description.
+            </div>
+            <div>
+                <strong>Predefined List:</strong> Quickly upload your complete list of {{ predefined_count|default:"170+" }} products.
+            </div>
+            <div>
+                <strong>Categories:</strong> Products are automatically categorized as fruit, vegetable, spice, or other based on their names.
+            </div>
+            <div>
+                <strong>SKU Codes:</strong> Auto-generated from product names if not provided. Duplicates are handled automatically.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active', 'border-green-500', 'text-green-600');
+        button.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + '-content').classList.remove('hidden');
+    
+    // Add active class to selected tab
+    const activeTab = document.getElementById(tabName + '-tab');
+    activeTab.classList.add('active', 'border-green-500', 'text-green-600');
+    activeTab.classList.remove('border-transparent', 'text-gray-500');
+}
+
+// Initialize with text tab active
+document.addEventListener('DOMContentLoaded', function() {
+    showTab('text');
+});
+</script>
+
+<style>
+.tab-button.active {
+    border-color: #10b981 !important;
+    color: #059669 !important;
+}
+</style>
+{% endblock %}
